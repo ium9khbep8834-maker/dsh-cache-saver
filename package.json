@@ -1,0 +1,54 @@
+{
+  "name": "@local/dsh-cache-saver",
+  "version": "0.3.1",
+  "type": "module",
+  "description": "Cuts the prompt payload every request re-sends: slims oversized tool JSON Schemas per agent, attributes tool-result volume and history composition, and shows the derived equivalent-token cost in a settings page.",
+  "license": "MIT",
+  "author": "dsh-cache-saver contributors",
+  "homepage": "https://github.com/ium9khbep8834-maker/dsh-cache-saver#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ium9khbep8834-maker/dsh-cache-saver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ium9khbep8834-maker/dsh-cache-saver/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "prompt-caching",
+    "token-saving",
+    "mcp"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "LICENSE",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  }
+}

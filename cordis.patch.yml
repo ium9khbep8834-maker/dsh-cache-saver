@@ -1,0 +1,3 @@
+- insert:
+    - id: cache-saver
+      name: '@local/dsh-cache-saver'

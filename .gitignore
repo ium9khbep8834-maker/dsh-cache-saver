@@ -1,0 +1,14 @@
+# Runtime artifacts
+node_modules/
+.dsh-cache-saver/
+*.log
+
+# Test/tooling scratch
+.tmp/
+coverage/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

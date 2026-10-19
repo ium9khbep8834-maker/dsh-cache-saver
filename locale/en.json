@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cache Saver",
+    "description": "Cuts the prompt payload every request re-sends: slims oversized tool schemas per agent, attributes tool-result volume and context composition, and shows the derived equivalent-token cost in a settings page."
+  }
+}
