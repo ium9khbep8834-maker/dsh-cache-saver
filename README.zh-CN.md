@@ -10,18 +10,83 @@
 
 ## 安装
 
-DeepSeek Harness 的 host + client 双边插件 —— **无需构建、零运行时依赖**。
+DeepSeek Harness 的 host + client 双边插件 —— **无需构建、零运行时依赖**：纯 ESM
+（`index.js` host 半边、`client.js` 设置页、`cordis.patch.yml`、多语言文案、图标）。
 
 ```bash
 git clone https://github.com/ium9khbep8834-maker/dsh-cache-saver
 ```
 
-然后安装到某个 profile：
+### 1. DSH 官方 CLI —— 一条命令，装包 + 注册 bundle
 
-- **插件管理器（推荐）**：`install_bundle`，`target` 指向刚克隆的目录（绝对路径）。
-- **手工安装**：把目录复制到
-  `~/.dsh/profiles/<profile>/node_modules/@local/dsh-cache-saver`，并在该 profile 的
-  `cordis.yml` 里加一行：
+`dsh plugin --profile <name> …` 会把后续参数**原样转给** profile 目录里的 pnpm，
+装完后自动把包里声明的 bundle 注册进 profile。所以本地目录、打包好的 tarball、
+git 地址三种 spec 都能用。
+
+装 `desktop` profile 前请**先完全退出 DeepSeek Harness**（运行中的应用占着该 profile）。
+
+```bat
+:: 桌面版：用应用自带的 CLI，它内置了 pnpm，无需额外安装
+"<安装目录>\resources\runtime\cli\bin\dsh.cmd" plugin --profile desktop add D:\path\to\dsh-cache-saver
+```
+
+```bash
+# 其它 profile（需要 PATH 上有 dsh）
+dsh plugin --profile web     add D:\path\to\dsh-cache-saver
+dsh plugin --profile dsh-tui add D:\path\to\dsh-cache-saver
+
+# 打包好的 tarball（离线、不需要 git）
+dsh plugin --profile desktop add .\local-dsh-cache-saver-0.3.1.tgz
+
+# 直接从 GitHub 装
+dsh plugin --profile desktop add github:ium9khbep8834-maker/dsh-cache-saver
+```
+
+不启动应用也能确认 bundle 已注册：
+
+```bash
+"<安装目录>\resources\runtime\cli\bin\dsh.cmd" --profile desktop --dump-config | grep -A2 cache-saver
+# - id: cache-saver
+#   name: '@local/dsh-cache-saver'
+```
+
+> `desktop` profile 只能由桌面版自带的 CLI 管理；用 npm 装的普通 `dsh` 会被拒绝
+> （报 `profile "desktop" is managed exclusively by the Electron application`）。
+> 所以 `desktop` 用上面的 `.cmd` 路径，`web` / `dsh-tui` 才用普通 `dsh`。
+
+### 2. npm
+
+npm 只负责装包，并不知道 DSH 的 bundle 机制，所以还需要你在 profile 的
+`package.json` 里补一行 bundle 声明。
+
+```bash
+npm install D:\path\to\dsh-cache-saver          # 软链（link:），改源码即生效
+npm install .\local-dsh-cache-saver-0.3.1.tgz   # 复制安装，遵循 "files" 白名单
+npm install github:ium9khbep8834-maker/dsh-cache-saver
+npm test                                        # 跑两套自测，不需要宿主
+```
+
+```json
+// ~/.dsh/profiles/<profile>/package.json
+"dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "@local/dsh-cache-saver"] } }
+```
+
+然后重启应用。
+
+> 包名是 `@local/dsh-cache-saver`（`@local` 是本地作用域，无法发布到公共 npm 仓库）。
+> 想发布到 npm 需要改名：`package.json` 的 `name`、`client.js` 里的模块 id、profile 里的
+> bundle 行必须**一起**改 —— 见下方「发布到 npm」。
+
+### 3. 桌面版插件管理器
+
+**设置 → 插件**（或 `plugin_manager` 工具）→ 从目录安装，`target` 指向克隆下来的
+包目录，效果与 (1) 相同，只是走 GUI。
+
+### 4. 手工安装
+
+把目录复制到 `~/.dsh/profiles/<profile>/node_modules/@local/dsh-cache-saver`，并在该
+profile 的 `cordis.patch.yml` 里加一行 —— patch 层能跨启动保留，而 `cordis.yml`
+每次启动都会被重新生成：
 
 ```yaml
 - id: cache-saver
@@ -29,7 +94,20 @@ git clone https://github.com/ium9khbep8834-maker/dsh-cache-saver
   config: {}   # 可选，见下方「配置」
 ```
 
-重启应用（或重载该 bundle）一次。client 半边是在页面引导（boot）时导入的，所以设置页入口只有在**重启 / 刷新页面**之后才会出现，之后进入 **设置 → 缓存节省**。
+无论用哪种方式装完：重启应用（或重载该 bundle）一次。client 半边是在页面引导
+（boot）时导入的，所以设置页入口只有在**重启 / 刷新页面**之后才会出现，之后进入
+**设置 → 缓存节省**。
+
+### 发布到 npm（可选）
+
+包本身可以直接打包（`npm pack` → 10 个文件，没有 `private` 限制），但发布前必须
+换成无作用域包名：
+
+```bash
+npm login
+# 先改名：package.json 的 "name"、client.js 的模块 id、profile 里的 bundle 行
+npm publish --access public
+```
 
 ## 要解决的问题
 

@@ -11,19 +11,87 @@ prompt cache, and **measure** where the re-sent context actually goes.
 
 ## Install
 
-A host + client bundle for DeepSeek Harness — **no build step, no dependencies**.
+A host + client bundle for DeepSeek Harness — **no build step, no dependencies**:
+plain ESM (`index.js` host half, `client.js` settings page, `cordis.patch.yml`,
+locales, icon).
 
 ```bash
 git clone https://github.com/ium9khbep8834-maker/dsh-cache-saver
 ```
 
-Then install it into a profile:
+### 1. Official DSH CLI — one command, installs *and* registers the bundle
 
-- **Plugin manager (recommended)**: `install_bundle` with `target` = the cloned
-  directory (absolute path).
-- **By hand**: copy the directory to
-  `~/.dsh/profiles/<profile>/node_modules/@local/dsh-cache-saver` and add one row
-  to that profile's `cordis.yml`:
+`dsh plugin --profile <name> …` forwards its arguments verbatim to pnpm inside
+the profile directory, then registers whatever bundle the installed package
+declares. A local directory, a packed tarball and a git spec all work.
+
+Close DeepSeek Harness completely first when targeting the `desktop` profile —
+the running app holds that profile.
+
+```bat
+:: Desktop: the CLI shipped with the app carries its own pnpm, nothing to install
+"<install dir>\resources\runtime\cli\bin\dsh.cmd" plugin --profile desktop add D:\path\to\dsh-cache-saver
+```
+
+```bash
+# other profiles, with `dsh` on PATH
+dsh plugin --profile web     add D:\path\to\dsh-cache-saver
+dsh plugin --profile dsh-tui add D:\path\to\dsh-cache-saver
+
+# packed tarball (offline, no git needed)
+dsh plugin --profile desktop add .\local-dsh-cache-saver-0.3.1.tgz
+
+# straight from GitHub
+dsh plugin --profile desktop add github:ium9khbep8834-maker/dsh-cache-saver
+```
+
+Confirm the bundle landed, without booting anything:
+
+```bash
+"<install dir>\resources\runtime\cli\bin\dsh.cmd" --profile desktop --dump-config | grep -A2 cache-saver
+# - id: cache-saver
+#   name: '@local/dsh-cache-saver'
+```
+
+> Only the Desktop CLI may manage the `desktop` profile — a plain `dsh` from npm
+> refuses it (`profile "desktop" is managed exclusively by the Electron
+> application`). Use the `.cmd` path above for `desktop`, plain `dsh` for `web` /
+> `dsh-tui`.
+
+### 2. npm
+
+npm installs the package but knows nothing about DSH bundles, so you add the
+bundle entry yourself — one line of JSON in the profile's `package.json`.
+
+```bash
+npm install D:\path\to\dsh-cache-saver          # symlink (link:) — good for hacking
+npm install .\local-dsh-cache-saver-0.3.1.tgz   # copy; honours "files"
+npm install github:ium9khbep8834-maker/dsh-cache-saver
+npm test                                        # unit + client checks, no harness needed
+```
+
+```json
+// ~/.dsh/profiles/<profile>/package.json
+"dsh": { "profile": { "bundles": ["@deepseek-ai/dsh-base", "@local/dsh-cache-saver"] } }
+```
+
+Then restart the app.
+
+> The package name is `@local/dsh-cache-saver` (a local scope, not publishable to
+> the public npm registry). Publishing under an unscoped name is a rename:
+> `name` in `package.json`, the module id in `client.js`, and the bundle row must
+> change together — see "Publishing to npm" below.
+
+### 3. Desktop plugin manager
+
+**Settings → Plugins** (or the `plugin_manager` tool) → install from directory,
+`target` = the cloned package directory. Same result as (1), from the GUI.
+
+### 4. By hand
+
+Copy the directory to `~/.dsh/profiles/<profile>/node_modules/@local/dsh-cache-saver`
+and add a row to that profile's `cordis.patch.yml` — the patch layer survives
+boot; `cordis.yml` is rebuilt on every start:
 
 ```yaml
 - id: cache-saver
@@ -31,9 +99,20 @@ Then install it into a profile:
   config: {}   # optional, see "Config" below
 ```
 
-Restart the app (or reload the bundle) once. The client half is imported during
-page boot, so the settings entry appears only after a restart / page reload —
-then open **Settings → Cache saver**.
+After any install: restart the app (or reload the bundle). The client half is
+imported during page boot, so the settings entry appears only after a restart or
+page reload — then open **Settings → Cache saver**.
+
+### Publishing to npm (optional)
+
+The package is `private`-free and packs cleanly (`npm pack` → 10 files), but an
+unscoped name is required:
+
+```bash
+npm login
+# rename first: package.json "name", client.js module id, profile patch row
+npm publish --access public
+```
 
 ## The problem
 

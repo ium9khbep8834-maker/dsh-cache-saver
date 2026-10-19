@@ -37,8 +37,14 @@
     "locale/*.json",
     "icon.svg",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "README.zh-CN.md"
   ],
+  "scripts": {
+    "test": "node test/unit.mjs && node test/client.mjs",
+    "check": "node --check index.js && node --check client.js",
+    "pack:check": "npm pack --dry-run"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
