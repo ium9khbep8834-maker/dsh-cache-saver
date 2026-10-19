@@ -1,7 +1,37 @@
 # Cache Saver
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![DeepSeek Harness plugin](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4f46e5)](https://github.com/ium9khbep8834-maker/dsh-cache-saver)
+[![no dependencies](https://img.shields.io/badge/runtime%20deps-none-brightgreen)](package.json)
+
 Cut the token cost of a large tool set, keep more of every request inside the
 prompt cache, and **measure** where the re-sent context actually goes.
+
+## Install
+
+A host + client bundle for DeepSeek Harness — **no build step, no dependencies**.
+
+```bash
+git clone https://github.com/ium9khbep8834-maker/dsh-cache-saver
+```
+
+Then install it into a profile:
+
+- **Plugin manager (recommended)**: `install_bundle` with `target` = the cloned
+  directory (absolute path).
+- **By hand**: copy the directory to
+  `~/.dsh/profiles/<profile>/node_modules/@local/dsh-cache-saver` and add one row
+  to that profile's `cordis.yml`:
+
+```yaml
+- id: cache-saver
+  name: '@local/dsh-cache-saver'
+  config: {}   # optional, see "Config" below
+```
+
+Restart the app (or reload the bundle) once. The client half is imported during
+page boot, so the settings entry appears only after a restart / page reload —
+then open **Settings → Cache saver**.
 
 ## The problem
 
@@ -202,3 +232,7 @@ instead of aborting the boot.
 Recovery if a stale copy still fails: open the crash dialog, choose
 `禁用第三方插件、备份 profile patch 并重启`, then re-enable the bundle from
 Plugins settings (or `plugin_manager` `set_bundle` on `@local/dsh-cache-saver`).
+
+## License
+
+MIT — see [LICENSE](LICENSE).
