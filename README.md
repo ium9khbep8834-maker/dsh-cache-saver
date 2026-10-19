@@ -4,6 +4,8 @@
 [![DeepSeek Harness plugin](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4f46e5)](https://github.com/ium9khbep8834-maker/dsh-cache-saver)
 [![no dependencies](https://img.shields.io/badge/runtime%20deps-none-brightgreen)](package.json)
 
+**English** · [简体中文](README.zh-CN.md)
+
 Cut the token cost of a large tool set, keep more of every request inside the
 prompt cache, and **measure** where the re-sent context actually goes.
 
